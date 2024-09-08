@@ -1,0 +1,14 @@
+# Dockerfile: Generate random web traffic using curl
+FROM alpine:latest
+
+# Install curl and bash
+RUN apk update && apk add --no-cache curl bash
+
+# Copy the start.sh script into the container
+COPY start.sh /opt/start.sh
+
+# Make the script executable
+RUN chmod +x /opt/start.sh
+
+# Run the traffic generator script
+CMD ["/bin/bash", "/opt/start.sh"]

@@ -1,0 +1,8 @@
+FROM python:3.10-alpine
+
+RUN pip install paho-mqtt
+
+COPY mqtt_device.py /app/mqtt_device.py
+WORKDIR /app
+
+CMD ["python", "mqtt_device.py"]

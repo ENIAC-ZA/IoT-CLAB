@@ -1,0 +1,117 @@
+name: sdn-dcn
+
+# Define custom IPv4 subnet for the management network 
+mgmt:
+  ipv4-subnet: 172.10.10.0/24
+  ipv4-gw: 172.10.10.1
+  #external-access: false
+
+topology:
+  nodes:
+    ctrl:
+      kind: linux
+      image: martimy/ryu-flowmanager:latest
+      mgmt-ipv4: 172.10.10.10
+      binds:
+        - ./config:/home/auser/labs
+      publish:
+        - tcp/8080
+      entrypoint: ryu-manager flowmanager/flowmanager.py labs/simple_switch_13.py
+
+    gtwy:
+      kind: linux
+      image: frrouting/frr
+      binds:
+        - ./config/gtwy/daemons:/etc/frr/daemons
+        - ./config/gtwy/frr.conf:/etc/frr/frr.conf
+      exec:
+        - iptables -t nat -A POSTROUTING -j MASQUERADE
+
+    # Original devices
+    h11:
+      kind: linux
+      image: weather-api
+      mgmt-ipv4: 172.10.10.11
+      exec:
+        - ip link set dev eth1 address 00:00:00:00:00:01
+        - ip addr add 192.168.2.2/24 dev eth1
+        - ip link set eth0 down
+        - ip route replace default via 192.168.2.1
+
+    h12:
+      kind: linux
+      image: streamer-nat
+      mgmt-ipv4: 172.10.10.12
+      exec:
+        - ip link set dev eth1 address 00:00:00:00:00:02
+        - ip addr add 192.168.2.3/24 dev eth1
+        - ip link set eth0 down
+        - ip route replace default via 192.168.2.1
+
+    h21:
+      kind: linux
+      image: streamer-nasa
+      mgmt-ipv4: 172.10.10.21
+      exec:
+        - ip link set dev eth1 address 00:00:00:00:00:03
+        - ip addr add 192.168.2.4/24 dev eth1
+        - ip link set eth0 down
+        - ip route replace default via 192.168.2.1
+
+    h22:
+      kind: linux
+      image: radio
+      mgmt-ipv4: 172.10.10.22
+      exec:
+        - ip link set dev eth1 address 00:00:00:00:00:04
+        - ip addr add 192.168.2.5/24 dev eth1
+        - ip link set eth0 down
+        - ip route replace default via 192.168.2.1
+
+    h31:
+      kind: linux
+      image: crazy-api
+      mgmt-ipv4: 172.10.10.31
+      exec:
+        - ip link set dev eth1 address 00:00:00:00:00:05
+        - ip addr add 192.168.2.6/24 dev eth1
+        - ip link set eth0 down
+        - ip route replace default via 192.168.2.1
+
+    h32:
+      kind: linux
+      image: lscr.io/linuxserver/smokeping:latest
+      mgmt-ipv4: 172.10.10.32
+      exec:
+        - ip link set dev eth1 address 00:00:00:00:00:06
+        - ip addr add 192.168.2.7/24 dev eth1
+        - ip link set eth0 down
+        - ip route replace default via 192.168.2.1
+
+    h41:
+      kind: linux
+      image: crazy-api-2
+      mgmt-ipv4: 172.10.10.41
+      exec:
+        - ip link set dev eth1 address 00:00:00:00:00:07
+        - ip addr add 192.168.2.8/24 dev eth1
+        - ip link set eth0 down
+        - ip route replace default via 192.168.2.1
+
+# The switches must be created manually before running clab
+    spine1:
+      kind: ovs-bridge
+
+    brdg:
+      kind: bridge
+
+  links:
+    - endpoints: ["spine1:p10", "brdg:eth1"]
+    - endpoints: ["gtwy:eth1", "brdg:eth2"]
+    - endpoints: ["h11:eth1", "spine1:p1"]
+    - endpoints: ["h12:eth1", "spine1:p2"]
+    - endpoints: ["h21:eth1", "spine1:p3"]
+    - endpoints: ["h22:eth1", "spine1:p4"]
+    - endpoints: ["h31:eth1", "spine1:p5"]
+    - endpoints: ["h32:eth1", "spine1:p6"]
+    - endpoints: ["h41:eth1", "spine1:p7"]
