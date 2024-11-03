@@ -50,12 +50,6 @@ To use this lab, you need to install the following:
 
 - confluentinc/cp-zookeeper:6.1.1
 
-- confluentinc/cp-kafka:6.1.1
-
-- confluentinc/cp-kafka:6.1.1
-
-- confluentinc/cp-kafka:6.1.1
-
 - confluentinc/cp-schema-registry:6.1.1
 
 - confluentinc/cp-kafka-connect-base:6.1.4
